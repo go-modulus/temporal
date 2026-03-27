@@ -5,7 +5,7 @@ import (
 
 	infraCli "github.com/go-modulus/modulus/cli"
 	"github.com/go-modulus/temporal/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"go.temporal.io/sdk/client"
 	interceptor2 "go.temporal.io/sdk/interceptor"
 	"go.temporal.io/sdk/worker"
@@ -36,10 +36,8 @@ func NewWorker(params WorkersParams) *Worker {
 
 func WorkerCommand(w *Worker) *cli.Command {
 	return &cli.Command{
-		Name: "worker",
-		Action: func(ctx *cli.Context) error {
-			return w.Invoke(ctx, ctx.String("queue"), ctx.Bool("enable-session-worker"))
-		},
+		Name:   "worker",
+		Action: w.Invoke,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "queue",
@@ -57,9 +55,11 @@ func WorkerCommand(w *Worker) *cli.Command {
 	}
 }
 
-func (w *Worker) Invoke(cliCtx *cli.Context, queue string, enableSessionWorker bool) error {
+func (w *Worker) Invoke(ctx context.Context, cmd *cli.Command) error {
+	queue := cmd.String("queue")
+	enableSessionWorker := cmd.Bool("enable-session-worker")
 	return w.runner.Run(
-		cliCtx.Context,
+		ctx,
 		func(ctx context.Context) error {
 			errorInterceptor := &errors.AppErrWrapWorkerInterceptor{}
 			tw := worker.New(

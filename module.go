@@ -9,7 +9,7 @@ import (
 
 	cli2 "github.com/go-modulus/modulus/cli"
 	"github.com/go-modulus/modulus/module"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
@@ -250,7 +250,7 @@ func NewModule() *module.Module {
 		) *cli.Command {
 			return &cli.Command{
 				Name: "temporal",
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					WorkerCommand(worker),
 					SchedulerCommand(scheduler),
 				},

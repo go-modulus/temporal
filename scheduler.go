@@ -3,12 +3,13 @@ package temporal
 import (
 	"context"
 	"errors"
+	"log/slog"
+
 	"github.com/go-modulus/modulus/errors/errlog"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/fx"
-	"log/slog"
 )
 
 type Scheduler struct {
@@ -41,9 +42,7 @@ func SchedulerCommand(scheduler *Scheduler) *cli.Command {
 			"\n" +
 			"Example: go run cmd/console/main.go temporal scheduler --queue=default",
 		Description: "Adds or updates Temporal schedules. Getting the config from workflow structs that are implementing the Schedule interface.",
-		Action: func(ctx *cli.Context) error {
-			return scheduler.Invoke(ctx.Context, ctx.String("queue"))
-		},
+		Action:      scheduler.Invoke,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "queue",
@@ -55,7 +54,8 @@ func SchedulerCommand(scheduler *Scheduler) *cli.Command {
 	}
 }
 
-func (w *Scheduler) Invoke(ctx context.Context, queue string) error {
+func (w *Scheduler) Invoke(ctx context.Context, cmd *cli.Command) error {
+	queue := cmd.String("queue")
 	scheduleClient := w.temporal.ScheduleClient()
 	for _, r := range w.schedules {
 		opts := r.Schedule(queue)
