@@ -1,0 +1,23 @@
+default: help
+
+###
+## Add these lines to your .zshrc to have autocompletion for make commands
+## zstyle ':completion:*:make:*:targets' call-command true
+## zstyle ':completion:*:*:make:*' tag-order 'targets'
+##
+####################################################################################################
+## MAIN COMMANDS
+####################################################################################################
+.PHONY: help
+help: ## show this help message
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m\033[0m\n"} /^[$$()% a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+.PHONY: test
+test: ## Run tests
+	go install github.com/rakyll/gotest@latest
+	gotest -v -failfast  ./...
+
+.PHONY: analyze
+analyze: ## Run static analyzer
+	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v2.10.1 golangci-lint run -v
+
